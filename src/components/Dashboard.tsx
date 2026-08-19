@@ -1,5 +1,6 @@
 'use client'
 import { useCallback, useEffect, useState } from 'react'
+import Link from 'next/link'
 import StartupCard, { type Startup } from '@/components/StartupCard'
 import StartupDetail from '@/components/StartupDetail'
 import { STARTUPS } from '@/lib/startups'
@@ -32,7 +33,7 @@ function fetchRecommendations(): Promise<Startup[]> {
   return new Promise(resolve => setTimeout(() => resolve(STARTUPS), 500))
 }
 
-type Props = { user: User; onLogout: () => void }
+type Props = { user: User | null; onLogout: () => void }
 
 export default function Dashboard({ user, onLogout }: Props) {
   const [filters, setFilters] = useState<Filters>(initialFilters)
@@ -73,7 +74,7 @@ export default function Dashboard({ user, onLogout }: Props) {
   return <div className="app-shell">
     <header className="topbar">
       <div className="brand"><span className="brand-mark">V</span><div><b>VentureLens</b><small>AI INVESTMENT INTELLIGENCE</small></div></div>
-      <div className="header-meta"><span className="live"><i /> AI 스코어링 활성</span><span className="user-name">{user.name}님</span><button className="logout" onClick={onLogout}>로그아웃</button></div>
+      <div className="header-meta"><span className="live"><i /> AI 스코어링 활성</span>{user ? <><span className="user-name">{user.name}님</span><button className="logout" onClick={onLogout}>로그아웃</button></> : <Link className="logout" href="/login">로그인</Link>}</div>
     </header>
     <main className="dashboard">
       <aside className="filter-panel">
