@@ -1,8 +1,9 @@
 import { fetchInvestmentNews, type InvestmentNewsItem } from './naverNews'
 import { generateStructured } from './gemini'
 import type { Startup } from '@/components/StartupCard'
+import { activeFilterConstraints, initialFilters, type Filters } from './filters'
 
-const QUERIES = ['스타트업 투자유치', '스타트업 시리즈A', '스타트업 시드투자']
+const DEFAULT_QUERIES = ['스타트업 투자유치', '스타트업 시리즈A', '스타트업 시드투자']
 
 const RESPONSE_SCHEMA = {
   type: 'object',
@@ -45,15 +46,28 @@ const RESPONSE_SCHEMA = {
 
 type ExtractedStartup = Omit<Startup, 'id'>
 
-function buildPrompt(articles: InvestmentNewsItem[]): string {
+function buildQueries(filters: Filters): string[] {
+  const specific: string[] = []
+  if (filters.keyword.trim()) specific.push(`${filters.keyword.trim()} 투자유치`)
+  if (filters.industry !== initialFilters.industry) specific.push(`${filters.industry} 스타트업 투자유치`)
+  if (filters.stage !== initialFilters.stage) specific.push(`스타트업 ${filters.stage} 투자유치`)
+  return specific.length > 0 ? [...specific, DEFAULT_QUERIES[0]] : DEFAULT_QUERIES
+}
+
+function buildPrompt(articles: InvestmentNewsItem[], filters: Filters): string {
   const list = articles
     .map((a, i) => `[${i + 1}] ${a.title}\n${a.summary}\n출처: ${a.source} (${a.publishedAt})\nURL: ${a.link}`)
     .join('\n\n')
 
+  const constraints = activeFilterConstraints(filters)
+  const constraintsBlock = constraints.length > 0
+    ? `\n다음 조건을 모두 만족하는 기업만 선정하세요(기사에 조건 충족 여부를 판단할 근거가 없으면 그 기업은 제외하세요):\n${constraints.map(c => `- ${c}`).join('\n')}\n조건에 맞는 기업이 하나도 없으면 startups를 빈 배열로 반환하세요.\n`
+    : ''
+
   return `당신은 한국 스타트업 투자 애널리스트입니다. 아래는 최신 네이버 뉴스 기사 목록입니다.
 
 ${list}
-
+${constraintsBlock}
 이 기사들에서 실제로 이름이 언급된 스타트업/기업을 최대 10개까지 골라주세요. **기사에 등장하지 않는 회사를 지어내지 마세요.** 같은 회사가 여러 기사에 나오면 하나로 합치세요.
 
 각 기업에 대해:
@@ -68,8 +82,9 @@ ${list}
 투자매력도(score) 높은 순으로 정렬해서 반환하세요.`
 }
 
-export async function discoverStartups(): Promise<Startup[]> {
-  const newsLists = await Promise.all(QUERIES.map(q => fetchInvestmentNews(q, 8)))
+export async function discoverStartups(filters: Filters = initialFilters): Promise<Startup[]> {
+  const queries = buildQueries(filters)
+  const newsLists = await Promise.all(queries.map(q => fetchInvestmentNews(q, 8)))
   const seen = new Set<string>()
   const articles: InvestmentNewsItem[] = []
   for (const list of newsLists) {
@@ -79,15 +94,14 @@ export async function discoverStartups(): Promise<Startup[]> {
       articles.push(item)
     }
   }
-  if (articles.length === 0) throw new Error('참고할 투자유치 뉴스가 없습니다.')
+  if (articles.length === 0) return []
 
   const { startups } = await generateStructured<{ startups: ExtractedStartup[] }>(
-    buildPrompt(articles),
+    buildPrompt(articles, filters),
     RESPONSE_SCHEMA,
   )
-  if (!startups || startups.length === 0) throw new Error('AI가 추천 기업을 찾지 못했습니다.')
 
-  return startups
+  return (startups ?? [])
     .sort((a, b) => b.score - a.score)
     .slice(0, 10)
     .map((s, i) => ({ ...s, id: i + 1 }))

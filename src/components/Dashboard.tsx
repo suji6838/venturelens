@@ -6,39 +6,21 @@ import StartupDetail from '@/components/StartupDetail'
 import InvestmentNewsFeed from '@/components/InvestmentNewsFeed'
 import { STARTUPS } from '@/lib/startups'
 import type { User } from '@/lib/auth'
+import { type Filters, initialFilters, selectOptions } from '@/lib/filters'
 
-type Filters = {
-  industry: string; stage: string; growth: string; keyword: string; recentFunding: string
-  fundingAmount: string; foundedYear: string; revenue: string; employees: string
-  traffic: string; patents: string; investors: string
-}
-
-const initialFilters: Filters = {
-  industry: '전체 산업', stage: '전체 단계', growth: '성장률 무관', keyword: '',
-  recentFunding: '무관', fundingAmount: '무관', foundedYear: '무관', revenue: '무관',
-  employees: '무관', traffic: '무관', patents: '무관', investors: '무관'
-}
-
-const selectOptions = {
-  recentFunding: ['무관', '최근 6개월', '최근 1년', '최근 2년'],
-  fundingAmount: ['무관', '10억원 이상', '30억원 이상', '100억원 이상'],
-  foundedYear: ['무관', '2024년 이후', '2021~2023년', '2020년 이전'],
-  revenue: ['무관', '1억원 이상', '10억원 이상', '50억원 이상'],
-  employees: ['무관', '10명 이상', '30명 이상', '100명 이상'],
-  traffic: ['무관', '월 1만 이상', '월 10만 이상', '월 100만 이상'],
-  patents: ['무관', '1건 이상', '5건 이상', '10건 이상'],
-  investors: ['무관', '기관 투자자 보유', '글로벌 투자자 보유', '후속 투자 유치']
-}
-
-async function fetchRecommendations(): Promise<Startup[]> {
+async function fetchRecommendations(filters: Filters): Promise<Startup[]> {
   try {
-    const response = await fetch('/api/discover')
+    const response = await fetch('/api/discover', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(filters),
+    })
     if (!response.ok) throw new Error()
     const data: Startup[] = await response.json()
-    if (!Array.isArray(data) || data.length === 0) throw new Error()
-    return data
+    if (!Array.isArray(data)) throw new Error()
+    return data // 빈 배열은 "조건에 맞는 기업 없음"이라는 정상 결과 — 폴백 대상 아님
   } catch {
-    // AI 파이프라인(뉴스+Gemini) 실패 시 목데이터로 폴백 — 화면이 완전히 비지 않도록 함
+    // AI 파이프라인(뉴스+Gemini) 자체가 실패했을 때만 목데이터로 폴백 — 화면이 완전히 비지 않도록 함
     return STARTUPS
   }
 }
@@ -52,11 +34,11 @@ export default function Dashboard({ user, onLogout }: Props) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const loadRecommendations = useCallback(async () => {
+  const loadRecommendations = useCallback(async (nextFilters: Filters) => {
     setLoading(true)
     setError('')
     try {
-      const data = await fetchRecommendations()
+      const data = await fetchRecommendations(nextFilters)
       setItems(data)
       setSelected(data[0] ?? null)
     } catch (e) {
@@ -67,13 +49,13 @@ export default function Dashboard({ user, onLogout }: Props) {
   }, [])
 
   useEffect(() => {
-    loadRecommendations()
+    loadRecommendations(initialFilters)
   }, [loadRecommendations])
 
   const change = (key: keyof Filters, value: string) => setFilters(prev => ({ ...prev, [key]: value }))
   const submit = (event: React.FormEvent) => {
     event.preventDefault()
-    loadRecommendations()
+    loadRecommendations(filters)
   }
   const extraSelect = (key: keyof typeof selectOptions, label: string) => (
     <label key={key}>{label}<select value={filters[key]} onChange={e => change(key, e.target.value)}>
@@ -104,7 +86,7 @@ export default function Dashboard({ user, onLogout }: Props) {
         <div className="content-head"><div><p className="eyebrow">CURATED PIPELINE</p><h2>AI 추천 TOP 5 <span>투자 후보</span></h2></div><p className="updated">실시간 스코어링 · 상위 결과</p></div>
         <section className="kpis"><div><small>분석 기업</small><b>1,248</b><span>이번 주 +84</span></div><div><small>고성장 후보</small><b>36</b><span>연 100%+ 성장</span></div><div><small>평균 매력도</small><b>87.2</b><span>상위 5개 기준</span></div></section>
         {loading && <div className="state">AI가 투자 후보를 분석하고 있습니다…</div>}
-        {error && <div className="state error">{error}<button onClick={() => loadRecommendations()}>다시 시도</button></div>}
+        {error && <div className="state error">{error}<button onClick={() => loadRecommendations(filters)}>다시 시도</button></div>}
         {!loading && !error && <div className="startup-grid">{items.slice(0, 5).map(item => <StartupCard key={item.id} startup={item} selected={selected?.id === item.id} onSelect={() => setSelected(item)} />)}</div>}
         {!loading && !error && items.length === 0 && <div className="state">조건에 맞는 기업이 없습니다. 조건을 넓혀 다시 찾아보세요.</div>}
         <StartupDetail startup={selected} />
