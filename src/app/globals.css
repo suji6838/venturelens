@@ -14,7 +14,7 @@ button{cursor:pointer}
 .live{color:#d9f8ef}
 .live i{display:inline-block;width:7px;height:7px;background:#22c99a;border-radius:50%;margin-right:6px}
 .dashboard{max-width:1500px;margin:auto;display:grid;grid-template-columns:280px minmax(0,1fr);gap:28px;padding:28px clamp(16px,4vw,58px) 48px}
-.filter-panel{background:var(--navy);color:#fff;border-radius:18px;padding:28px 23px;display:flex;flex-direction:column;justify-content:space-between;min-height:670px}
+.filter-panel{background:var(--navy);color:#fff;border-radius:18px;padding:28px 23px;display:flex;flex-direction:column;justify-content:flex-start;gap:28px;min-height:670px}
 .eyebrow{font:10px 'DM Mono',monospace;letter-spacing:1.5px;color:var(--color-primary);margin:0 0 10px}
 .filter-panel .eyebrow{color:#8fb2ff}
 .filter-panel h1{font-size:25px;line-height:1.35;letter-spacing:-1px;margin:0}
@@ -30,7 +30,7 @@ select option{background:#1b3156}
 .primary span{float:right;font-size:18px;line-height:14px}
 .condition-title{grid-column:1/-1;margin-top:6px;padding-top:16px;border-top:1px solid #304568;font:700 11px Manrope,'Noto Sans KR',sans-serif;letter-spacing:.2px;color:#8fb2ff}
 .condition-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;grid-column:1/-1}
-.filter-note{border-top:1px solid #304568;padding-top:17px;font-size:11px;color:#aebbd0}
+.filter-note{margin-top:auto;border-top:1px solid #304568;padding-top:17px;font-size:11px;color:#aebbd0}
 .filter-note b{display:block;color:#fff;margin-bottom:6px}
 .content{min-width:0}
 .content-head{display:flex;justify-content:space-between;align-items:end;margin:2px 0 17px}
