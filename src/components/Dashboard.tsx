@@ -75,6 +75,12 @@ export default function Dashboard({ user, onLogout }: Props) {
     event.preventDefault()
     loadRecommendations(filters)
   }
+  const goHome = (event: React.MouseEvent) => {
+    event.preventDefault()
+    setFilters(initialFilters)
+    loadRecommendations(initialFilters)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
   const extraSelect = (key: keyof typeof selectOptions, label: string) => (
     <label key={key}>{label}<select value={filters[key]} onChange={e => change(key, e.target.value)}>
       {selectOptions[key].map(option => <option key={option}>{option}</option>)}
@@ -83,7 +89,7 @@ export default function Dashboard({ user, onLogout }: Props) {
 
   return <div className="app-shell">
     <header className="topbar">
-      <div className="brand"><span className="brand-mark">V</span><div><b>VentureLens</b><small>AI INVESTMENT INTELLIGENCE</small></div></div>
+      <Link href="/" className="brand" onClick={goHome}><span className="brand-mark">V</span><div><b>VentureLens</b><small>AI INVESTMENT INTELLIGENCE</small></div></Link>
       <div className="header-meta"><span className="live"><i /> AI 스코어링 활성</span>{user ? <><span className="user-name">{user.name}님</span><button className="logout" onClick={onLogout}>로그아웃</button></> : <Link className="logout" href="/login">로그인</Link>}</div>
     </header>
     <main className="dashboard">

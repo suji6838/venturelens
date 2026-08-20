@@ -6,7 +6,7 @@ button,input,select{font:inherit}
 button{cursor:pointer}
 .app-shell{min-height:100vh}
 .topbar{height:72px;padding:0 clamp(20px,4vw,58px);background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:space-between}
-.brand{display:flex;gap:11px;align-items:center}
+.brand{display:flex;gap:11px;align-items:center;text-decoration:none;color:inherit;cursor:pointer}
 .brand-mark{width:31px;height:31px;display:grid;place-items:center;border-radius:8px;background:linear-gradient(135deg,#6fa1ff,#2866e7);font-weight:800;font-size:18px}
 .brand b{display:block;font-size:17px;letter-spacing:-.5px}
 .brand small{display:block;color:#9eb1d0;font:9px 'DM Mono',monospace;letter-spacing:1.2px;margin-top:2px}
