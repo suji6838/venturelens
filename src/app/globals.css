@@ -96,6 +96,13 @@ select option{background:#1b3156}
 .basis{margin-top:12px}
 .history{padding:20px 2px;display:grid;gap:14px;font-size:13px}
 .history span{color:var(--color-primary);font-size:10px;margin-right:10px}
+.news-feed{margin-top:24px;background:var(--color-surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px 24px}
+.news-list{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.news-list li{padding:12px 0;border-top:1px solid #edf0f5}
+.news-list li:first-child{border-top:0}
+.news-list a{color:var(--color-text);font-size:13px;font-weight:600;text-decoration:none;line-height:1.5}
+.news-list a:hover{color:var(--color-primary);text-decoration:underline}
+.news-meta{display:flex;gap:10px;margin-top:5px;font-size:11px;color:var(--color-muted)}
 .state{border:1px dashed #b9c7dc;border-radius:var(--radius);padding:36px;text-align:center;color:var(--color-muted);font-size:13px}
 .state.error{color:#b33e50}
 .state button{margin-left:10px;border:0;background:none;color:var(--color-primary);text-decoration:underline}

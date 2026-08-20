@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import StartupCard, { type Startup } from '@/components/StartupCard'
 import StartupDetail from '@/components/StartupDetail'
+import InvestmentNewsFeed from '@/components/InvestmentNewsFeed'
 import { STARTUPS } from '@/lib/startups'
 import type { User } from '@/lib/auth'
 
@@ -98,6 +99,7 @@ export default function Dashboard({ user, onLogout }: Props) {
         {!loading && !error && <div className="startup-grid">{items.map(item => <StartupCard key={item.id} startup={item} selected={selected?.id === item.id} onSelect={() => setSelected(item)} />)}</div>}
         {!loading && !error && items.length === 0 && <div className="state">조건에 맞는 기업이 없습니다. 조건을 넓혀 다시 찾아보세요.</div>}
         <StartupDetail startup={selected} />
+        <InvestmentNewsFeed />
       </section>
     </main>
   </div>
