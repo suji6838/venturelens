@@ -1,5 +1,6 @@
 import { fetchInvestmentNews, type InvestmentNewsItem } from './naverNews'
 import { generateStructured } from './gemini'
+import { dedupeSimilarTitles } from './dedupe'
 import type { Startup } from '@/components/StartupCard'
 import { activeFilterConstraints, initialFilters, type Filters } from './filters'
 
@@ -92,14 +93,17 @@ export async function discoverStartups(filters: Filters = initialFilters): Promi
   const queries = buildQueries(filters)
   const newsLists = await Promise.all(queries.map(q => fetchInvestmentNews(q, 8)))
   const seen = new Set<string>()
-  const articles: InvestmentNewsItem[] = []
+  const rawArticles: InvestmentNewsItem[] = []
   for (const list of newsLists) {
     for (const item of list) {
       if (seen.has(item.link)) continue
       seen.add(item.link)
-      articles.push(item)
+      rawArticles.push(item)
     }
   }
+  // 여러 쿼리에서 같은 사건을 다룬 다른 언론사 기사가 겹쳐 들어오는 경우가 많아
+  // URL 중복 제거만으로는 부족함 — 제목 유사도로 한 번 더 정리.
+  const articles = dedupeSimilarTitles(rawArticles)
   if (articles.length === 0) return []
 
   const { startups } = await generateStructured<{ startups: ExtractedStartup[] }>(
