@@ -6,7 +6,7 @@ export default function StartupDetail({ startup }: Props) {
   const [tab, setTab] = useState<'analysis' | 'valuation' | 'history'>('analysis')
   if (!startup) return <section className="detail empty"><span>◌</span><h2>분석할 기업을 선택하세요</h2><p>추천 카드에서 기업을 고르면 AI 분석과 가치 추정을 확인할 수 있습니다.</p></section>
   return <section className="detail" aria-live="polite">
-    <div className="detail-head"><div><p className="eyebrow">AI INVESTMENT BRIEF</p><h2>{startup.name}</h2><p>{startup.summary}</p></div><div className="detail-score"><b>{startup.score}</b><span>투자매력도</span></div></div>
+    <div className="detail-head"><div><p className="eyebrow">AI INVESTMENT BRIEF</p><h2>{startup.name}</h2><p className="detail-summary">{startup.summary}</p>{startup.sourceUrl && <p><a href={startup.sourceUrl} target="_blank" rel="noopener noreferrer" className="source-link">근거 기사 보기 →</a></p>}</div><div className="detail-score"><b>{startup.score}</b><span>투자매력도</span></div></div>
     <div className="tabs" role="tablist">
       <button className={tab === 'analysis' ? 'active' : ''} onClick={() => setTab('analysis')} role="tab">AI 분석</button>
       <button className={tab === 'valuation' ? 'active' : ''} onClick={() => setTab('valuation')} role="tab">가치 추정</button>

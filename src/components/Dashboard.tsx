@@ -30,8 +30,17 @@ const selectOptions = {
   investors: ['무관', '기관 투자자 보유', '글로벌 투자자 보유', '후속 투자 유치']
 }
 
-function fetchRecommendations(): Promise<Startup[]> {
-  return new Promise(resolve => setTimeout(() => resolve(STARTUPS), 500))
+async function fetchRecommendations(): Promise<Startup[]> {
+  try {
+    const response = await fetch('/api/discover')
+    if (!response.ok) throw new Error()
+    const data: Startup[] = await response.json()
+    if (!Array.isArray(data) || data.length === 0) throw new Error()
+    return data
+  } catch {
+    // AI 파이프라인(뉴스+Gemini) 실패 시 목데이터로 폴백 — 화면이 완전히 비지 않도록 함
+    return STARTUPS
+  }
 }
 
 type Props = { user: User | null; onLogout: () => void }
@@ -96,7 +105,7 @@ export default function Dashboard({ user, onLogout }: Props) {
         <section className="kpis"><div><small>분석 기업</small><b>1,248</b><span>이번 주 +84</span></div><div><small>고성장 후보</small><b>36</b><span>연 100%+ 성장</span></div><div><small>평균 매력도</small><b>87.2</b><span>상위 5개 기준</span></div></section>
         {loading && <div className="state">AI가 투자 후보를 분석하고 있습니다…</div>}
         {error && <div className="state error">{error}<button onClick={() => loadRecommendations()}>다시 시도</button></div>}
-        {!loading && !error && <div className="startup-grid">{items.map(item => <StartupCard key={item.id} startup={item} selected={selected?.id === item.id} onSelect={() => setSelected(item)} />)}</div>}
+        {!loading && !error && <div className="startup-grid">{items.slice(0, 5).map(item => <StartupCard key={item.id} startup={item} selected={selected?.id === item.id} onSelect={() => setSelected(item)} />)}</div>}
         {!loading && !error && items.length === 0 && <div className="state">조건에 맞는 기업이 없습니다. 조건을 넓혀 다시 찾아보세요.</div>}
         <StartupDetail startup={selected} />
         <InvestmentNewsFeed />

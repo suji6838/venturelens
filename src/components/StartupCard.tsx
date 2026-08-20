@@ -1,5 +1,5 @@
 export type Startup = {
-  id: number; name: string; industry: string; founded: number; score: number; stage: string; growth: string; funding: string; tag: string; summary: string; model: string; market: string; growth_text: string; competition: string; valuation: string; fair: string; basis: string; confidence: number; history: string[];
+  id: number; name: string; industry: string; founded: number; score: number; stage: string; growth: string; funding: string; tag: string; summary: string; model: string; market: string; growth_text: string; competition: string; valuation: string; fair: string; basis: string; confidence: number; history: string[]; sourceUrl?: string;
 }
 
 type Props = { startup: Startup; selected: boolean; onSelect: () => void }
