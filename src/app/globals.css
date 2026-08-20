@@ -19,7 +19,7 @@ button{cursor:pointer}
 .filter-panel .eyebrow{color:#8fb2ff}
 .filter-panel h1{font-size:25px;line-height:1.35;letter-spacing:-1px;margin:0}
 .filter-panel h1 em{font-style:normal;color:#76a1ff}
-.filter-desc{font-size:12px;line-height:1.7;color:#aebbd0;margin:15px 0 28px}
+.filter-desc{font-size:12px;line-height:1.7;color:#aebbd0;margin:15px 0 8px}
 form{display:grid;gap:14px}
 label{font-size:11px;color:#c6d1e3;font-weight:600}
 input,select{display:block;width:100%;margin-top:7px;background:#1b3156;border:1px solid #304568;color:#fff;border-radius:8px;padding:11px 10px;font-size:12px;outline:none}
@@ -28,7 +28,7 @@ select option{background:#1b3156}
 .primary{margin-top:7px;border:0;border-radius:8px;background:#4b82f4;color:#fff;padding:12px;font-weight:700;font-size:13px;transition:.15s}
 .primary:hover{background:#6695fa;transform:translateY(-1px)}
 .primary span{float:right;font-size:18px;line-height:14px}
-.condition-title{grid-column:1/-1;margin-top:6px;padding-top:16px;border-top:1px solid #304568;font:700 10px 'DM Mono',monospace;letter-spacing:1.3px;color:#8fb2ff}
+.condition-title{grid-column:1/-1;margin-top:6px;padding-top:16px;border-top:1px solid #304568;font:700 11px Manrope,'Noto Sans KR',sans-serif;letter-spacing:.2px;color:#8fb2ff}
 .condition-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;grid-column:1/-1}
 .filter-note{border-top:1px solid #304568;padding-top:17px;font-size:11px;color:#aebbd0}
 .filter-note b{display:block;color:#fff;margin-bottom:6px}
