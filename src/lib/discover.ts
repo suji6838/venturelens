@@ -48,7 +48,13 @@ type ExtractedStartup = Omit<Startup, 'id'>
 
 function buildQueries(filters: Filters): string[] {
   const specific: string[] = []
-  if (filters.keyword.trim()) specific.push(`${filters.keyword.trim()} 투자유치`)
+  if (filters.keyword.trim()) {
+    // 네이버 뉴스 검색은 다중 단어를 느슨하게(OR에 가깝게) 매칭해서, "키워드 투자유치"처럼
+    // 매번 "투자유치"를 덧붙이면 오히려 키워드 자체의 관련성이 희석됨 — 키워드 단독 쿼리를
+    // 먼저 넣어서 그 기업/주제 자체를 다루는 기사를 직접 찾고, 투자유치 프레이밍 쿼리는 보조로만 둠.
+    specific.push(filters.keyword.trim())
+    specific.push(`${filters.keyword.trim()} 투자유치`)
+  }
   if (filters.industry !== initialFilters.industry) specific.push(`${filters.industry} 스타트업 투자유치`)
   if (filters.stage !== initialFilters.stage) specific.push(`스타트업 ${filters.stage} 투자유치`)
   return specific.length > 0 ? [...specific, DEFAULT_QUERIES[0]] : DEFAULT_QUERIES
