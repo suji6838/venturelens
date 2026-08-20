@@ -8,21 +8,36 @@ import { STARTUPS } from '@/lib/startups'
 import type { User } from '@/lib/auth'
 import { type Filters, initialFilters, selectOptions } from '@/lib/filters'
 
-async function fetchRecommendations(filters: Filters): Promise<Startup[]> {
+type RecommendationsResult = { items: Startup[]; fallback: boolean; reason?: string }
+
+async function fetchRecommendations(filters: Filters): Promise<RecommendationsResult> {
   try {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 45000) // 실제 뉴스+AI 호출이라 최대 45초까지 기다림, 그 이상이면 폴백
     const response = await fetch('/api/discover', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(filters),
-    })
-    if (!response.ok) throw new Error()
+      signal: controller.signal,
+    }).finally(() => clearTimeout(timeout))
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}))
+      throw new Error(typeof body.detail === 'string' ? body.detail : 'AI 추천을 불러오지 못했습니다.')
+    }
     const data: Startup[] = await response.json()
-    if (!Array.isArray(data)) throw new Error()
-    return data // 빈 배열은 "조건에 맞는 기업 없음"이라는 정상 결과 — 폴백 대상 아님
-  } catch {
+    if (!Array.isArray(data)) throw new Error('AI 추천을 불러오지 못했습니다.')
+    return { items: data, fallback: false } // 빈 배열은 "조건에 맞는 기업 없음"이라는 정상 결과 — 폴백 대상 아님
+  } catch (e) {
     // AI 파이프라인(뉴스+Gemini) 자체가 실패했을 때만 목데이터로 폴백 — 화면이 완전히 비지 않도록 함
-    return STARTUPS
+    return { items: STARTUPS, fallback: true, reason: e instanceof Error ? e.message : undefined }
   }
+}
+
+function fallbackMessage(reason?: string): string {
+  if (reason?.includes('429') || reason?.toLowerCase().includes('quota') || reason?.toLowerCase().includes('resource_exhausted')) {
+    return 'AI 분석 API 사용량 한도(무료 티어)에 도달해 예시 데이터를 보여드리고 있어요. 잠시 후 다시 시도해 주세요.'
+  }
+  return '지금 실시간 AI 추천을 불러오지 못해 예시 데이터를 보여드리고 있어요. "AI 추천 기업 찾기"를 다시 눌러보세요.'
 }
 
 type Props = { user: User | null; onLogout: () => void }
@@ -33,14 +48,17 @@ export default function Dashboard({ user, onLogout }: Props) {
   const [selected, setSelected] = useState<Startup | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
 
   const loadRecommendations = useCallback(async (nextFilters: Filters) => {
     setLoading(true)
     setError('')
+    setNotice('')
     try {
-      const data = await fetchRecommendations(nextFilters)
+      const { items: data, fallback, reason } = await fetchRecommendations(nextFilters)
       setItems(data)
       setSelected(data[0] ?? null)
+      if (fallback) setNotice(fallbackMessage(reason))
     } catch (e) {
       setError(e instanceof Error ? e.message : '잠시 후 다시 시도해 주세요.')
     } finally {
@@ -85,7 +103,8 @@ export default function Dashboard({ user, onLogout }: Props) {
       <section className="content">
         <div className="content-head"><div><p className="eyebrow">CURATED PIPELINE</p><h2>AI 추천 TOP 5 <span>투자 후보</span></h2></div><p className="updated">실시간 스코어링 · 상위 결과</p></div>
         <section className="kpis"><div><small>분석 기업</small><b>1,248</b><span>이번 주 +84</span></div><div><small>고성장 후보</small><b>36</b><span>연 100%+ 성장</span></div><div><small>평균 매력도</small><b>87.2</b><span>상위 5개 기준</span></div></section>
-        {loading && <div className="state">AI가 투자 후보를 분석하고 있습니다…</div>}
+        {loading && <div className="state">AI가 실시간 뉴스를 분석하고 있습니다… (최대 30초 정도 걸릴 수 있어요)</div>}
+        {!loading && notice && <div className="notice">{notice}<button onClick={() => loadRecommendations(filters)}>다시 시도</button></div>}
         {error && <div className="state error">{error}<button onClick={() => loadRecommendations(filters)}>다시 시도</button></div>}
         {!loading && !error && <div className="startup-grid">{items.slice(0, 5).map(item => <StartupCard key={item.id} startup={item} selected={selected?.id === item.id} onSelect={() => setSelected(item)} />)}</div>}
         {!loading && !error && items.length === 0 && <div className="state">조건에 맞는 기업이 없습니다. 조건을 넓혀 다시 찾아보세요.</div>}
