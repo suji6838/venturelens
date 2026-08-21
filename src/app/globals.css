@@ -159,5 +159,11 @@ button:focus-visible,input:focus,select:focus{outline:2px solid #83a9f5;outline-
 .legal-page .fill{color:#b33e50;font-weight:700}
 .legal-page .contact-box{background:var(--color-surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 20px;font-size:13px}
 .legal-page .contact-box p{margin:0 0 4px}
+.site-footer{grid-column:1/-1;border-top:1px solid var(--line);background:var(--color-surface);padding:18px clamp(16px,4vw,58px);display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;font-size:11px;color:var(--color-muted)}
+.site-footer p{margin:0}
+.site-footer nav{display:flex;gap:16px}
+.site-footer a{color:var(--color-muted);text-decoration:none}
+.site-footer a:hover{color:var(--color-primary);text-decoration:underline}
+@media(max-width:640px){.site-footer{padding:16px 20px;justify-content:center;text-align:center}}
 @media(max-width:1024px){.auth-page{grid-template-columns:1fr}.auth-intro{min-height:auto;gap:48px;padding:48px 32px}.auth-intro ul{margin:0;grid-template-columns:repeat(3,1fr)}.auth-panel{padding:32px 20px}.dashboard{grid-template-columns:1fr}.filter-panel{min-height:auto;gap:25px}.filter-panel form{grid-template-columns:repeat(2,1fr)}.filter-panel form label:first-child,.primary{grid-column:1/-1}}
 @media(max-width:640px){.auth-intro{padding:32px 24px;gap:36px}.auth-intro h1{font-size:38px}.auth-intro ul{grid-template-columns:1fr;gap:10px}.auth-panel{padding:18px}.auth-card{padding:26px 21px}.topbar{height:64px;padding:0 16px}.header-meta>span:last-child{display:none}.dashboard{padding:16px;gap:16px}.filter-panel{padding:22px 18px}.filter-panel form{grid-template-columns:1fr}.content-head{align-items:start}.updated{display:none}.kpis{grid-template-columns:1fr}.kpis>div{border-right:0;border-bottom:1px solid var(--line)}.kpis>div:last-child{border-bottom:0}.analysis-grid{grid-template-columns:1fr 1fr}.valuation{grid-template-columns:1fr;gap:18px}.value-main{border-right:0;border-bottom:1px solid var(--line);padding-bottom:16px}.detail{padding:18px}.detail-head h2{font-size:20px}.startup-grid{grid-template-columns:1fr}.header-meta{gap:0}.brand small{font-size:8px}}

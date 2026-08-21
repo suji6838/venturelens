@@ -4,6 +4,7 @@ import Link from 'next/link'
 import StartupCard, { type Startup } from '@/components/StartupCard'
 import StartupDetail from '@/components/StartupDetail'
 import InvestmentNewsFeed from '@/components/InvestmentNewsFeed'
+import Footer from '@/components/Footer'
 import { STARTUPS } from '@/lib/startups'
 import type { User } from '@/lib/auth'
 import { type Filters, initialFilters, selectOptions } from '@/lib/filters'
@@ -118,5 +119,6 @@ export default function Dashboard({ user, onLogout }: Props) {
         <InvestmentNewsFeed />
       </section>
     </main>
+    <Footer />
   </div>
 }
