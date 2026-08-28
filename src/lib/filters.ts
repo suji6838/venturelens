@@ -4,6 +4,8 @@ export type Filters = {
   traffic: string; patents: string; investors: string
 }
 
+export const STAGE_OPTIONS = ['Pre-Seed', 'Seed', 'Series A', 'Series B', 'Series C+'] as const
+
 export const initialFilters: Filters = {
   industry: '전체 산업', stage: '전체 단계', growth: '성장률 무관', keyword: '',
   recentFunding: '무관', fundingAmount: '무관', foundedYear: '무관', revenue: '무관',

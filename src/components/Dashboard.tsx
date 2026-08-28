@@ -7,7 +7,7 @@ import InvestmentNewsFeed from '@/components/InvestmentNewsFeed'
 import Footer from '@/components/Footer'
 import { STARTUPS } from '@/lib/startups'
 import type { User } from '@/lib/auth'
-import { type Filters, initialFilters, selectOptions } from '@/lib/filters'
+import { type Filters, initialFilters, selectOptions, STAGE_OPTIONS } from '@/lib/filters'
 
 type RecommendationsResult = { items: Startup[]; fallback: boolean; reason?: string }
 
@@ -99,7 +99,7 @@ export default function Dashboard({ user, onLogout }: Props) {
         <form onSubmit={submit}>
           <label>검색 키워드<input value={filters.keyword} onChange={e => change('keyword', e.target.value)} placeholder="기업명 또는 산업 검색" /></label>
           <label>산업<select value={filters.industry} onChange={e => change('industry', e.target.value)}>{['전체 산업', 'AI', '헬스케어', '핀테크', 'SaaS', '로보틱스', '커머스', '바이오', '기후테크'].map(option => <option key={option}>{option}</option>)}</select></label>
-          <label>투자 단계<select value={filters.stage} onChange={e => change('stage', e.target.value)}>{['전체 단계', 'Pre-Seed', 'Seed', 'Series A', 'Series B', 'Series C+'].map(option => <option key={option}>{option}</option>)}</select></label>
+          <label>투자 단계<select value={filters.stage} onChange={e => change('stage', e.target.value)}>{['전체 단계', ...STAGE_OPTIONS].map(option => <option key={option}>{option}</option>)}</select></label>
           <label>성장률<select value={filters.growth} onChange={e => change('growth', e.target.value)}><option>성장률 무관</option><option>연 50% 이상</option><option>연 100% 이상</option></select></label>
           <div className="condition-title">기업 조건</div>
           <div className="condition-grid">{extraSelect('recentFunding', '최근 투자유치')}{extraSelect('fundingAmount', '투자금액')}{extraSelect('foundedYear', '설립연도')}{extraSelect('revenue', '매출')}{extraSelect('employees', '직원 수')}{extraSelect('traffic', '트래픽')}{extraSelect('patents', '특허')}{extraSelect('investors', '투자자')}</div>
