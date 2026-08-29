@@ -19,7 +19,7 @@ const RESPONSE_SCHEMA = {
           founded: { type: 'integer' },
           score: { type: 'integer' },
           stage: { type: 'string', enum: STAGE_OPTIONS },
-          growth: { type: 'string' },
+          growth: { type: 'string', description: '연간 성장률을 "+120%"처럼 부호(+)와 %가 붙은 숫자 문자열로만 작성. "폭발적 성장", "고성장" 같은 서술형 표현 금지.' },
           funding: { type: 'string' },
           tag: { type: 'string' },
           summary: { type: 'string' },
@@ -81,6 +81,7 @@ ${constraintsBlock}
 - stage(투자 단계)는 반드시 "${STAGE_OPTIONS.join('", "')}" 중 하나로만 채우세요. "Later Stage", "Initial / Venture Round", "Growth Stage" 같은 해외 투자 데이터베이스식 표현을 그대로 쓰지 말고, 기사에 나온 실제 라운드명(시드/프리시드/시리즈A/B/C 등)이나 투자 맥락(설립연도, 투자금액, 몇 번째 투자인지)을 근거로 위 5개 중 가장 가까운 단계로 매핑하세요. 시리즈C 이후 후속 라운드(D, E, Pre-IPO 등)는 모두 "Series C+"로 묶으세요. 정말 판단할 근거가 없으면 "Seed"로 두세요.
 - 기사에 나온 사실(투자단계, 투자금액, 투자일자, 산업)은 최대한 그대로 반영하세요.
 - 기사에 명시되지 않은 세부 항목(사업모델, 시장성, 성장성, 경쟁력)은 기사 맥락과 일반 업계 지식으로 추정하되, **각 항목 1문장(50자 내외)으로 간결하게** 작성하세요.
+- growth(성장률)는 반드시 "+120%"처럼 부호(+)와 %가 붙은 숫자 문자열로 작성하세요. 기사에 매출/이용자/거래액 증가율 수치가 있으면 그대로 반영하고, 없으면 투자단계·투자금액·업계 상황을 근거로 합리적으로 추정하세요. "폭발적 성장", "고성장", "초고속 성장" 같은 서술형 표현은 쓰지 마세요.
 - score는 투자매력도 0~100점, confidence는 가치평가 신뢰도 0~100(정수).
 - valuation은 "150~200억원" 같은 범위 문자열, fair는 "175억원" 같은 단일 적정가치 문자열, basis도 1문장으로.
 - tag는 "강한 매수" / "매수" / "관심" 중 하나.
