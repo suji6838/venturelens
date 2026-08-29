@@ -71,6 +71,10 @@ export default function Dashboard({ user, onLogout }: Props) {
     loadRecommendations(initialFilters)
   }, [loadRecommendations])
 
+  const topFive = items.slice(0, 5)
+  const highGrowthCount = items.filter(item => parseFloat(item.growth) >= 100).length
+  const avgScore = topFive.length > 0 ? (topFive.reduce((sum, item) => sum + item.score, 0) / topFive.length).toFixed(1) : '0.0'
+
   const change = (key: keyof Filters, value: string) => setFilters(prev => ({ ...prev, [key]: value }))
   const submit = (event: React.FormEvent) => {
     event.preventDefault()
@@ -109,7 +113,7 @@ export default function Dashboard({ user, onLogout }: Props) {
       </aside>
       <section className="content">
         <div className="content-head"><div><p className="eyebrow">CURATED PIPELINE</p><h2>AI 추천 TOP 5 <span>투자 후보</span></h2></div><p className="updated">실시간 스코어링 · 상위 결과</p></div>
-        <section className="kpis"><div><small>분석 기업</small><b>1,248</b><span>이번 주 +84</span></div><div><small>고성장 후보</small><b>36</b><span>연 100%+ 성장</span></div><div><small>평균 매력도</small><b>87.2</b><span>상위 5개 기준</span></div></section>
+        <section className="kpis"><div><small>분석 기업</small><b>{items.length}</b><span>이번 발굴 결과</span></div><div><small>고성장 후보</small><b>{highGrowthCount}</b><span>연 100%+ 성장</span></div><div><small>평균 매력도</small><b>{avgScore}</b><span>상위 5개 기준</span></div></section>
         {loading && <div className="state">AI가 실시간 뉴스를 분석하고 있습니다… (최대 30초 정도 걸릴 수 있어요)</div>}
         {!loading && notice && <div className="notice">{notice}<button onClick={() => loadRecommendations(filters)}>다시 시도</button></div>}
         {error && <div className="state error">{error}<button onClick={() => loadRecommendations(filters)}>다시 시도</button></div>}
