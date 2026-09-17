@@ -50,6 +50,12 @@ const NON_HOMEPAGE_HOST_PATTERNS = [
   'rocketpunch.com', 'thevc.kr', 'platum.kr', 'venturesquare.net', 'bloter.net',
   'k-expo.org', 'kstartup.go.kr', 'marketbz.com',
   'google.com', 'apps.apple.com', 'play.google.com',
+  // 언론사/매거진 도메인 — 기사 링크가 "홈페이지"로 잘못 채택되는 사례가 실제로 나와서 추가.
+  'chosun.com', 'hankyung.com', 'thebionews.net', 'donga.com', 'joongang.co.kr', 'hani.co.kr',
+  'khan.co.kr', 'mk.co.kr', 'edaily.co.kr', 'news1.kr', 'yna.co.kr', 'mt.co.kr', 'asiae.co.kr',
+  'etnews.com', 'zdnet.co.kr', 'newsis.com', 'sedaily.com', 'fnnews.com',
+  // 링크 리다이렉트/트래킹 서비스 — 실제 홈페이지가 아니라 중간 리다이렉트 페이지로 확인됨.
+  'infoflex.net',
 ]
 
 function isBlockedHost(link: string): boolean {
@@ -58,10 +64,22 @@ function isBlockedHost(link: string): boolean {
   return NON_HOMEPAGE_HOST_PATTERNS.some(pattern => host.includes(pattern))
 }
 
+// 뉴스 기사/게시판 URL 패턴(경로에 news, article, board, bbs가 들어가거나 idxno= 같은 기사
+// ID 쿼리파라미터가 붙는 경우)은 도메인을 다 막아둘 수 없으니 URL 구조로 한 번 더 걸러낸다.
+// 회사 홈페이지 루트 URL은 이런 패턴을 갖지 않는다.
+const ARTICLE_URL_PATTERN = /\/(news|article(view)?|board|bbs|archives)(\/|\.html?|$)|[?&](idxno|artid|articleid|aid)=/i
+
+function looksLikeArticleUrl(link: string): boolean {
+  return ARTICLE_URL_PATTERN.test(link)
+}
+
 // 검색 결과 제목에 회사명이 "단어 단위"로 그대로 들어있지 않으면(다른 상품/성분명 일부에
 // 우연히 포함된 경우 등) 후보에서 제외 — 링크를 아예 안 보여주는 게 엉뚱한 곳으로 연결하는 것보다 낫다.
 // 예: "자일로"가 "자일로올리고당"(건강식품 성분명) 안에 붙어 있으면 매칭시키지 않음.
+// 회사명이 1글자면 무관한 단어(게임/작품명 등)에 우연히 단어 경계까지 맞아떨어질 확률이 높아
+// 아예 매칭 대상에서 제외한다.
 function titleMatchesCompany(title: string, companyName: string): boolean {
+  if (companyName.trim().length < 2) return false
   const text = stripHtml(title)
   const idx = text.indexOf(companyName)
   if (idx === -1) return false
@@ -116,7 +134,7 @@ export async function findCompanyWebsite(companyName: string): Promise<string | 
 
     const data: { items?: NaverWebApiItem[] } = await response.json()
     const candidates = (data.items ?? []).filter(
-      item => !isBlockedHost(item.link) && titleMatchesCompany(item.title, companyName),
+      item => !isBlockedHost(item.link) && !looksLikeArticleUrl(item.link) && titleMatchesCompany(item.title, companyName),
     )
     for (const candidate of candidates) {
       if (await isReachableHomepage(candidate.link)) return candidate.link
