@@ -104,7 +104,15 @@ async function isReachableHomepage(url: string): Promise<boolean> {
     })
     if (!response.ok) return false
     // 리다이렉트를 따라간 최종 주소가 차단 대상 도메인(파킹/검색결과 페이지 등)이면 실패 처리.
-    return !isBlockedHost(response.url)
+    if (isBlockedHost(response.url)) return false
+    // 도메인/URL 패턴만으로는 개인 블로그(자체 도메인)에 올라온 "회사 소개 글"까지는
+    // 못 걸러내서, 페이지 자체가 og:type=article로 스스로 게시물이라고 밝히는 경우도 제외.
+    // 진짜 회사 홈페이지는 이 태그를 안 쓰거나 website/product 등으로 표시함.
+    const html = await response.text()
+    if (/property=["']og:type["']\s+content=["']article["']|content=["']article["']\s+property=["']og:type["']/i.test(html)) {
+      return false
+    }
+    return true
   } catch {
     return false
   } finally {
