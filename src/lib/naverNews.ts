@@ -71,8 +71,32 @@ function titleMatchesCompany(title: string, companyName: string): boolean {
   return !(before && isWordChar(before)) && !(after && isWordChar(after))
 }
 
-// 기업명으로 네이버 웹문서 검색을 돌려 공식 홈페이지로 보이는 첫 결과를 반환.
-// 검색 자체가 실패하거나(구독 미설정 등) 확신할 만한 결과가 없으면 undefined — 호출부에서 그냥 링크를 생략.
+// 후보 링크가 실제로 열리는(죽은 도메인/만료/엉뚱한 곳으로 리다이렉트가 아닌) 페이지인지 확인.
+// 검색 제목 매칭만으로는 도메인이 만료돼 파킹 페이지로 넘어가거나 완전히 다른 사이트로
+// 리다이렉트된 경우를 걸러낼 수 없어서, 링크를 붙이기 전에 반드시 한 번 접속을 시도해본다.
+async function isReachableHomepage(url: string): Promise<boolean> {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 5000)
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      redirect: 'follow',
+      signal: controller.signal,
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; VentureLensBot/1.0)' },
+    })
+    if (!response.ok) return false
+    // 리다이렉트를 따라간 최종 주소가 차단 대상 도메인(파킹/검색결과 페이지 등)이면 실패 처리.
+    return !isBlockedHost(response.url)
+  } catch {
+    return false
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
+// 기업명으로 네이버 웹문서 검색을 돌려 공식 홈페이지로 보이는 결과 중, 실제로 접속되는
+// 첫 후보를 반환. 검색 자체가 실패하거나(구독 미설정 등) 확신할 만한/접속되는 결과가
+// 없으면 undefined — 호출부에서 그냥 링크를 생략(엉뚱한 페이지를 보여주는 것보다 낫다).
 export async function findCompanyWebsite(companyName: string): Promise<string | undefined> {
   const clientId = process.env.NAVER_CLIENT_ID
   const clientSecret = process.env.NAVER_CLIENT_SECRET
@@ -91,10 +115,13 @@ export async function findCompanyWebsite(companyName: string): Promise<string | 
     if (!response.ok) return undefined
 
     const data: { items?: NaverWebApiItem[] } = await response.json()
-    const hit = (data.items ?? []).find(
+    const candidates = (data.items ?? []).filter(
       item => !isBlockedHost(item.link) && titleMatchesCompany(item.title, companyName),
     )
-    return hit?.link
+    for (const candidate of candidates) {
+      if (await isReachableHomepage(candidate.link)) return candidate.link
+    }
+    return undefined
   } catch {
     return undefined
   }
