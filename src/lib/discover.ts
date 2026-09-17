@@ -1,4 +1,4 @@
-import { fetchInvestmentNews, findCompanyWebsite, type InvestmentNewsItem } from './naverNews'
+import { fetchInvestmentNews, type InvestmentNewsItem } from './naverNews'
 import { generateStructured } from './gemini'
 import { dedupeSimilarTitles } from './dedupe'
 import type { Startup } from '@/components/StartupCard'
@@ -117,8 +117,5 @@ export async function discoverStartups(filters: Filters = initialFilters): Promi
     .sort((a, b) => b.score - a.score)
     .slice(0, 10)
 
-  // 홈페이지 주소는 Gemini가 추정하게 하면 지어낼 위험이 있어, 실제 웹 검색으로 별도 확인.
-  const websites = await Promise.all(ranked.map(s => findCompanyWebsite(s.name)))
-
-  return ranked.map((s, i) => ({ ...s, id: i + 1, website: websites[i] }))
+  return ranked.map((s, i) => ({ ...s, id: i + 1 }))
 }
